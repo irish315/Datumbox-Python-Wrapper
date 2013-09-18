@@ -59,6 +59,7 @@ class DatumBox():
 	def keyword_extract(self, text):
 		"""Returns a list of keywords from the given text"""
 		full_url = DatumBox.base_url + "KeywordExtraction.json"
+		text = self.remove_leading_at(text)
 		response = self._send_request(full_url, {'text' : text, 'n' : 1})
 		return response['1'].keys();
 	
@@ -69,11 +70,14 @@ class DatumBox():
 	def document_similarity(self, text, text2):
 		"""Returns number between 0 (No similarity) and 1(Exactly equal)"""
 		full_url = DatumBox.base_url + "DocumentSimilarity.json"
+		text = self.remove_leading_at(text)
+		text2 = self.remove_leading_at(text2)
 		response = self._send_request(full_url, {'original': text, 'copy' : text2})
 		return response['Oliver'];
 	
 	def _classification_request(self, text, api_name):
 		full_url = DatumBox.base_url + api_name + ".json"
+		text = self.remove_leading_at(text)
 		return self._send_request(full_url, {'text' : text})
 		
 	def _send_request(self, full_url, params_dict):
@@ -87,8 +91,11 @@ class DatumBox():
 			raise DatumBoxError(response['output']['error']['ErrorCode'], response['output']['error']['ErrorMessage'])
 		else:
 			return response['output']['result']
-
-
+		
+	def remove_leading_at(self, text):
+		"""The datumbox API throws an unexpected error when the first charater is @ (Which is fairly common in tweets)"""
+		return text.lstrip('@')
+		
 class DatumBoxError(Exception):
 	def __init__(self, error_code, error_message):
 		self.error_code = error_code
